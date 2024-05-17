@@ -2630,6 +2630,43 @@ Scene_Battle.prototype.prepareBackground = function() {
     this._windowLayer.y = this._prevWindowLayer;
 };
 
+// Ensure battle state is restored
+Yanfly.Row.Scene_Battle_start = Scene_Battle.prototype.start;
+Scene_Battle.prototype.start = function() {
+    Yanfly.Row.Scene_Battle_start.call(this);
+    if ($gameTemp._rowBattle) {
+        $gameTemp._rowBattle = false;
+        this._statusWindow.refresh();
+        this._statusWindow.select(BattleManager.actor().index());
+    }
+};
+
+// Scene_Row modifications
+Scene_Row.prototype.terminate = function() {
+    if (Scene_Base.prototype.terminate) {
+        Scene_Base.prototype.terminate.call(this);
+    }
+
+    if (Yanfly.Row.SavedBattleBgm) {
+        AudioManager.playBgm(Yanfly.Row.SavedBattleBgm);
+        Yanfly.Row.SavedBattleBgm = null;
+    }
+    if (Yanfly.Row.SavedBattleBgs) {
+        AudioManager.playBgs(Yanfly.Row.SavedBattleBgs);
+        Yanfly.Row.SavedBattleBgs = null;
+    }
+
+    if ($gameParty.inBattle()) {
+      SceneManager.push(Scene_Battle);
+      $gameTemp.restoreBattleSpriteset();
+      BattleManager._phase = 'input';
+      BattleManager._actorCommandWindow.activate();
+      BattleManager._actorCommandWindow.selectSymbol('skill');
+      BattleManager.actor()._actionState = 'undecided';
+      SceneManager._scene.commandSkill();
+    }
+};
+
 }; // Imported.YEP_BattleEngineCore
 
 //=============================================================================
