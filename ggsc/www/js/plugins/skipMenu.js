@@ -11,17 +11,20 @@
 */
 
 
+
 Scene_Battle.prototype.changeInputWindow = function() {
     if (BattleManager.isInputting()) {
         if (!BattleManager.actor()) {BattleManager.selectNextCommand();}
         this.refreshStatus();
         this._statusWindow.deselect();
         this._statusWindow.open();//取消队伍命令，把它额外做了的工作搬出来
-
-        this._statusWindow.select(BattleManager.actor().index());//选定将要行动的角色
-
-        this._skillWindow.setStypeId(2);//不知道怎么读取角色技能类型，直接设为1
-        this.commandSkill();//选中技能时的回调
+        
+        if(BattleManager.actor()){
+            this._statusWindow.select(BattleManager.actor().index());//选定将要行动的角色
+            this._skillWindow.setStypeId(2);//不知道怎么读取角色技能类型，直接设为1
+            this.commandSkill();//选中技能时的回调
+        }
+        
         //this.startActorCommandSelection();
         /* if (BattleManager.actor()) {
             this.startActorCommandSelection();
@@ -47,7 +50,6 @@ Scene_Battle.prototype.onSkillCancel = function() { //取消你的取消
     this._skillWindow.hide();
     this._skillWindow.deactivate();
     BattleManager.selectPreviousCommand();
-    console.log("技能被取消");
 
     if (BattleManager.actor()) {
         this.refreshStatus();
@@ -57,10 +59,24 @@ Scene_Battle.prototype.onSkillCancel = function() { //取消你的取消
         this.commandSkill();
     } else {
         
+
+        BattleManager._bypassMoveToStartLocation = true;
+        $gameParty.loadActorImages();
+        this.prepareBackground();
+        BattleManager._savedActor = BattleManager.actor();
+        $gameSystem.setBattleRowCooldown();
+        Yanfly.Row.SavedBattleBgm = AudioManager.saveBgm();
+        Yanfly.Row.SavedBattleBgs = AudioManager.saveBgs();
+        $gameTemp.storeBattleSpriteset();
         SceneManager.push(Scene_Row);
+        BattleManager._phase = 'input';
+        $gameTemp._rowBattle = true;
+
+
         // 如果没有上一个队友，可以选择重新激活命令窗口，或者其他处理方式
         // this._actorCommandWindow.activate();
         // 或者显示某种提示信息
     }
 
 };
+
