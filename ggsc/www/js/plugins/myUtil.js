@@ -362,3 +362,19 @@ window.showCardPicFive = function (actids) {
         }, duration * (1000 / 60) + stayDuration); // 在所有卡牌移动完成后停留一段时间再执行
     });
 }
+
+
+// one time thing
+// 重新定义 Game_Actor 的 faceName 和 faceIndex 方法以确保脸部图片被重新加载
+window.refreshFace = function(){
+    Game_Actor.prototype.faceName = function() {
+        var faceName = this.actor().faceName;
+        ImageManager.loadFace(faceName);
+        return faceName;
+    };
+
+    Game_Actor.prototype.faceIndex = function() {
+        var faceIndex = this.actor().faceIndex;
+        return faceIndex;
+    };
+}
